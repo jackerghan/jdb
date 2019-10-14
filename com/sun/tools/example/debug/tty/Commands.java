@@ -42,6 +42,7 @@ import com.sun.tools.example.debug.expr.ParseException;
 
 import java.text.*;
 import java.util.*;
+import java.util.regex.*;
 import java.io.*;
 
 class Commands {
@@ -225,9 +226,23 @@ class Commands {
 
     }
 
-    void commandClasses() {
+    void commandClasses(StringTokenizer t) {
+        Pattern filter = null;
+        if (t.hasMoreTokens()) {
+            try {
+              filter = Pattern.compile(t.nextToken(), Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException e) {
+              MessageOutput.println("Bad pattern");
+              return;
+            }
+        }
+
         StringBuffer classList = new StringBuffer();
         for (ReferenceType refType : Env.vm().allClasses()) {
+            if (filter != null &&
+                !filter.matcher(refType.name()).find()) {
+                continue;
+            }
             classList.append(refType.name());
             classList.append("\n");
         }
@@ -358,7 +373,7 @@ class Commands {
         }
     }
 
-    private void printThreadGroup(ThreadGroupReference tg) {
+    private void printThreadGroup(ThreadGroupReference tg, Pattern filter) {
         ThreadIterator threadIter = new ThreadIterator(tg);
 
         MessageOutput.println("Thread Group:", tg.name());
@@ -382,6 +397,11 @@ class Commands {
             if (!thr.threadGroup().equals(tg)) {
                 tg = thr.threadGroup();
                 MessageOutput.println("Thread Group:", tg.name());
+            }
+
+            if ((filter != null) &&
+                !filter.matcher(thr.name()).find()) {
+                continue;
             }
 
             /*
@@ -458,17 +478,17 @@ class Commands {
     }
 
     void commandThreads(StringTokenizer t) {
-        if (!t.hasMoreTokens()) {
-            printThreadGroup(ThreadInfo.group());
+        Pattern filter = null;
+        if (t.hasMoreTokens()) {
+          try {
+            filter = Pattern.compile(t.nextToken(), Pattern.CASE_INSENSITIVE);
+          } catch (PatternSyntaxException e) {
+            MessageOutput.println("Bad pattern");
             return;
+          }
         }
-        String name = t.nextToken();
-        ThreadGroupReference tg = ThreadGroupIterator.find(name);
-        if (tg == null) {
-            MessageOutput.println("is not a valid threadgroup name", name);
-        } else {
-            printThreadGroup(tg);
-        }
+
+        printThreadGroup(ThreadInfo.group(), filter);
     }
 
     void commandThreadGroups() {
@@ -486,7 +506,7 @@ class Commands {
 
     void commandThread(StringTokenizer t) {
         if (!t.hasMoreTokens()) {
-            MessageOutput.println("Thread number not specified.");
+            MessageOutput.println("Thread number/name not specified.");
             return;
         }
         ThreadInfo threadInfo = doGetThread(t.nextToken());

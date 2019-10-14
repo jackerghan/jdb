@@ -73,6 +73,7 @@ public class TTYResources extends java.util.ListResourceBundle {
         {"Array:", "Array: {0}"},
         {"Array element is not a method", "Array element is not a method"},
         {"Array index must be a integer type", "Array index must be a integer type"},
+        {"Bad pattern", "Bad pattern"},
         {"base directory:", "base directory: {0}"},
         {"bootclasspath:", "bootclasspath: {0}"},
         {"Breakpoint hit:", "Breakpoint hit: "},
@@ -332,8 +333,8 @@ public class TTYResources extends java.util.ListResourceBundle {
              "\n" +
              "run [class [args]]        -- start execution of application's main class\n" +
              "\n" +
-             "threads [threadgroup]     -- list threads\n" +
-             "thread <thread id>        -- set default thread\n" +
+             "threads [filter]          -- list threads\n" +
+             "thread <thread id/name>   -- set default thread\n" +
              "suspend [thread id(s)]    -- suspend threads (default: all)\n" +
              "resume [thread id(s)]     -- resume threads (default: all)\n" +
              "where [<thread id> | all] -- dump a thread's stack\n" +
@@ -349,7 +350,7 @@ public class TTYResources extends java.util.ListResourceBundle {
              "set <lvalue> = <expr>     -- assign new value to field/variable/array element\n" +
              "locals                    -- print all local variables in current stack frame\n" +
              "\n" +
-             "classes                   -- list currently known classes\n" +
+             "classes [filter]          -- list currently known classes\n" +
              "class <class id>          -- show details of named class\n" +
              "methods <class id>        -- list a class's methods\n" +
              "fields <class id>         -- list a class's fields\n" +

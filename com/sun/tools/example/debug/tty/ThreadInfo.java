@@ -38,6 +38,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
+import java.util.regex.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -185,6 +186,20 @@ class ThreadInfo {
         return retInfo;
     }
 
+    static ThreadInfo findThreadInfoMatch(Pattern filter) {
+      ThreadInfo retInfo = null;
+
+      synchronized (threads) {
+          for (ThreadInfo ti : threads()) {
+              if (filter.matcher(ti.thread.name()).find()) {
+                 retInfo = ti;
+                 break;
+              }
+          }
+      }
+      return retInfo;
+    }
+
     static ThreadInfo getThreadInfo(ThreadReference tr) {
         return getThreadInfo(tr.uniqueID());
     }
@@ -194,12 +209,24 @@ class ThreadInfo {
         if (idToken.startsWith("t@")) {
             idToken = idToken.substring(2);
         }
+        long threadId = -1;
         try {
-            long threadId = Long.decode(idToken).longValue();
-            tinfo = getThreadInfo(threadId);
+            threadId = Long.decode(idToken).longValue();
         } catch (NumberFormatException e) {
-            tinfo = null;
         }
+        if (threadId != -1) {
+          tinfo = getThreadInfo(threadId);
+        } else {
+          Pattern filter;
+          try {
+            filter = Pattern.compile(idToken, Pattern.CASE_INSENSITIVE);
+          } catch (PatternSyntaxException e) {
+            MessageOutput.println("Bad pattern");
+            return null;
+          }
+          tinfo = findThreadInfoMatch(filter);
+        }
+
         return tinfo;
     }
 
